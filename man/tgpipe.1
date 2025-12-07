@@ -1,0 +1,140 @@
+.TH TGPIPE 1 "v1.0.0" "tgpipe" "User Commands"
+.SH NAME
+tgpipe \- pipe anything into Telegram
+.SH SYNOPSIS
+.B tgpipe
+[\fIOPTIONS\fR] [\fIMESSAGE\fR]
+.SH DESCRIPTION
+.B tgpipe
+is a small CLI tool that sends text, logs, files and other data to Telegram using the Bot API.
+It is designed to be used as a Unix filter and integrates well with other command-line tools.
+
+Input can be provided as command line arguments or via standard input (stdin).
+If stdin is not a TTY, piped input takes precedence over command line arguments.
+
+.SH OPTIONS
+.TP
+.BR --text
+Send plain text message (default).
+.TP
+.BR --md
+Use Markdown parse mode.
+.TP
+.BR --html
+Use HTML parse mode.
+.TP
+.BR --disable-preview
+Disable link previews for URLs in the message.
+.TP
+.BR --disable-notification
+Send "silent" notifications (no sound).
+.TP
+.BR --verbose
+Verbose logging, prints raw curl output.
+.TP
+.BR --silent
+No output at all, even on errors.
+.TP
+.BR --file " " \fIPATH\fR
+Send a file as document with optional caption.
+.TP
+.BR --photo " " \fIPATH\fR
+Send an image as photo with optional caption.
+.TP
+.BR --config " " \fIPATH\fR
+Use alternative config file instead of /etc/tgpipe.conf.
+.TP
+.BR --chat " " \fIID[,ID2,...]\fR
+Override CHAT_ID from config. May be used multiple times and supports comma-separated lists.
+.TP
+.BR --button-url " " "TEXT=URL"
+Add an inline keyboard button that opens the specified URL.
+.TP
+.BR --button " " "TEXT=DATA"
+Add an inline keyboard button with callback_data.
+.TP
+.BR --code
+Send message as preformatted code (HTML <pre><code>).
+.TP
+.BR --auto-code
+Automatically enable
+.BR --code
+if the longest line exceeds a configurable threshold.
+.TP
+.BR --tag " " \fITAG\fR
+Prefix each line with [TAG], useful for logs.
+.TP
+.BR --help
+Show help and exit.
+
+.SH CONFIGURATION
+The default config file is:
+.RS
+/etc/tgpipe.conf
+.RE
+
+Example:
+.PP
+.nf
+BOT_TOKEN="123456789:AAAA..."
+CHAT_ID="111111111"
+# or multiple:
+# CHAT_ID="111111111,222222222"
+.fi
+
+The config file may also set:
+.PP
+.nf
+LOG_MODE="normal"           # normal / verbose / silent
+DISABLE_PREVIEW="false"     # true / false
+DISABLE_NOTIFICATION="false"
+TGPIPE_MAX_LEN="4000"
+TGPIPE_AUTO_CODE_THRESHOLD="120"
+.fi
+
+.SH ENVIRONMENT
+.TP
+.B TGPIPE_BOT_TOKEN
+Overrides BOT_TOKEN from config.
+.TP
+.B TGPIPE_CHAT_ID
+Overrides CHAT_ID from config.
+.TP
+.B TGPIPE_MAX_LEN
+Maximum chunk size for splitting long messages (default 4000).
+.TP
+.B TGPIPE_AUTO_CODE_THRESHOLD
+Line length threshold for automatically enabling
+.BR --auto-code
+(default 120).
+
+.SH EXAMPLES
+Send a simple message:
+.PP
+.nf
+tgpipe "Hello from tgpipe"
+.fi
+
+Use HTML:
+.PP
+.nf
+tgpipe --html "<b>Bold</b> &amp; <i>italic</i>"
+.fi
+
+Pipe logs:
+.PP
+.nf
+journalctl -u nginx | tgpipe --tag nginx --auto-code
+.fi
+
+Send a report file:
+.PP
+.nf
+tgpipe --file /tmp/report.txt "Nightly report"
+.fi
+
+.SH AUTHOR
+Written by the tgpipe project authors.
+
+.SH LICENSE
+MIT License. See the LICENSE file distributed with this software.

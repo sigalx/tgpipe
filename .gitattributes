@@ -1,0 +1,30 @@
+# Use LF for all text files (important for shell scripts)
+* text=auto eol=lf
+
+# Explicitly mark shell scripts as text with LF
+*.sh text eol=lf
+bin/tgpipe text eol=lf
+
+# Debian packaging files — treat as text
+debian/* text eol=lf
+
+# But ignore these binary/special files produced during build
+*.deb binary
+*.buildinfo binary
+*.changes  binary
+*.dsc      binary
+*.tar.gz   binary
+*.tar.xz   binary
+*.orig.tar.gz binary
+
+# Tell GitHub Linguist that tgpipe is a shell project
+bin/tgpipe linguist-language=Shell
+
+# Exclude debian helper garbage from Linguist statistics
+debian/.debhelper/* linguist-generated=true
+debian/*substvars   linguist-generated=true
+debian/files        linguist-generated=true
+debian/tmp/         linguist-generated=true
+
+# Prevent CRLF pollution in config files
+*.conf text eol=lf

@@ -1,0 +1,7 @@
+bin/tgpipe usr/bin
+etc/tgpipe.conf.example etc/
+man/tgpipe.1 usr/share/man/man1/
+assets/tgpipe-logo.svg usr/share/doc/tgpipe/
+README.md usr/share/doc/tgpipe/
+CHANGELOG.md usr/share/doc/tgpipe/
+LICENSE usr/share/doc/tgpipe/

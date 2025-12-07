@@ -1,0 +1,17 @@
+# /etc/tgpipe.conf example
+
+# Telegram bot token
+BOT_TOKEN="123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+
+# Single chat:
+# CHAT_ID="111111111"
+
+# Multiple chats, comma-separated:
+# CHAT_ID="111111111,222222222"
+
+# Optional defaults:
+# LOG_MODE="normal"           # normal / verbose / silent
+# DISABLE_PREVIEW="false"     # true / false
+# DISABLE_NOTIFICATION="false"
+# TGPIPE_MAX_LEN="4000"
+# TGPIPE_AUTO_CODE_THRESHOLD="120"

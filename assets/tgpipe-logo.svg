@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="80" viewBox="0 0 320 80">
+  <rect width="320" height="80" rx="12" ry="12" fill="#1c1f26"/>
+  <path d="M32 18 L54 26 L46 30 L50 42 L44 39 L40 52 L36 34 L24 30 Z" fill="#34ace0"/>
+  <path d="M40 52 L36 34 L46 30 Z" fill="#ffffff" fill-opacity="0.9"/>
+  <rect x="80" y="22" width="2" height="36" fill="#34ace0" rx="1"/>
+  <text x="96" y="36" fill="#ffffff" font-family="monospace" font-size="18">tgpipe</text>
+  <text x="96" y="54" fill="#8f9bb3" font-family="monospace" font-size="10">pipe anything into Telegram</text>
+</svg>

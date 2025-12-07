@@ -1,0 +1,17 @@
+Source: tgpipe
+Section: utils
+Priority: optional
+Maintainer: sigalx <no-email>
+Build-Depends:
+ debhelper-compat (= 13)
+Standards-Version: 4.7.0
+Homepage: https://github.com/sigalx/tgpipe
+Rules-Requires-Root: no
+
+Package: tgpipe
+Architecture: all
+Depends: bash, curl, ${misc:Depends}
+Description: Pipe anything into Telegram
+ tgpipe is a tiny CLI tool that sends text, logs, files and other data
+ to Telegram using the Bot API. Designed for DevOps, monitoring,
+ cron jobs, systemd timers and home automation.

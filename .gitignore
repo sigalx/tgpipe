@@ -1,0 +1,28 @@
+# Build artifacts
+*.deb
+*.buildinfo
+*.changes
+*.dsc
+*.tar.gz
+*.tar.xz
+*.orig.tar.gz
+
+# Debian helper files
+.debhelper/
+debian/.debhelper/
+debian/files
+debian/tgpipe/
+debian/tgpipe.substvars
+debian/debhelper-build-stamp
+
+# Temporary build directory
+debian/tmp/
+dist/
+
+# Editor / system files
+*~
+*.swp
+*.swo
+
+# IDE files
+/.idea
