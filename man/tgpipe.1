@@ -35,6 +35,10 @@ Verbose logging, prints raw curl output.
 .BR --silent
 No output at all, even on errors.
 .TP
+.BR --proxy " " \fIURL\fR
+Use a proxy for Telegram API requests.
+The URL is passed directly to curl and may use any curl-supported proxy scheme, such as http, https, socks5 or socks5h.
+.TP
 .BR --file " " \fIPATH\fR
 Send a file as document with optional caption.
 .TP
@@ -88,6 +92,7 @@ The config file may also set:
 LOG_MODE="normal"           # normal / verbose / silent
 DISABLE_PREVIEW="false"     # true / false
 DISABLE_NOTIFICATION="false"
+PROXY="socks5h://127.0.0.1:9050"
 TGPIPE_MAX_LEN="4000"
 TGPIPE_AUTO_CODE_THRESHOLD="120"
 .fi
@@ -99,6 +104,9 @@ Overrides BOT_TOKEN from config.
 .TP
 .B TGPIPE_CHAT_ID
 Overrides CHAT_ID from config.
+.TP
+.B TGPIPE_PROXY
+Proxy URL for Telegram API requests.
 .TP
 .B TGPIPE_MAX_LEN
 Maximum chunk size for splitting long messages (default 4000).
@@ -131,6 +139,12 @@ Send a report file:
 .PP
 .nf
 tgpipe --file /tmp/report.txt "Nightly report"
+.fi
+
+Use a proxy:
+.PP
+.nf
+tgpipe --proxy socks5h://127.0.0.1:9050 "Hello through proxy"
 .fi
 
 .SH AUTHOR

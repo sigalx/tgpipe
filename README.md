@@ -15,6 +15,7 @@ Repository: https://github.com/sigalx/tgpipe
 - Multiple chats (`CHAT_ID="id1,id2"` or `--chat`)
 - Silent notifications (`--disable-notification`)
 - Disable link previews (`--disable-preview`)
+- Proxy support (`--proxy`, `TGPIPE_PROXY`, `PROXY`)
 - Inline buttons (`--button-url`, `--button`)
 - Code mode (`--code`, `--auto-code`)
 - Log tags (`--tag`)
@@ -40,6 +41,7 @@ Edit `/etc/tgpipe.conf`:
 ```bash
 BOT_TOKEN="123456:ABCDEF..."
 CHAT_ID="123456789"         # or multiple: "111,222,333"
+# PROXY="socks5h://127.0.0.1:9050"
 ```
 
 ### 2. Debian/Ubuntu: install from .deb
@@ -131,6 +133,15 @@ tgpipe --file /path/to/report.txt "New report"
 tgpipe --chat 111111111 --chat 222222222,333333333 "Hello everyone"
 ```
 
+### Proxy
+
+```bash
+tgpipe --proxy socks5h://127.0.0.1:9050 "Hello through proxy"
+TGPIPE_PROXY=http://proxy.example:3128 tgpipe "Hello through proxy"
+```
+
+The proxy URL is passed directly to `curl`, so any curl-supported scheme can be used, including `http://`, `https://`, `socks5://` and `socks5h://`.
+
 ### Inline buttons
 
 ```bash
@@ -152,6 +163,7 @@ journalctl -u nginx | tgpipe --tag nginx --auto-code
 
 - `TGPIPE_BOT_TOKEN` — overrides `BOT_TOKEN` from config
 - `TGPIPE_CHAT_ID` — overrides `CHAT_ID` from config
+- `TGPIPE_PROXY` — proxy URL for Telegram API requests
 - `TGPIPE_MAX_LEN` — maximum chunk size (default 4000)
 - `TGPIPE_AUTO_CODE_THRESHOLD` — line length threshold for `--auto-code` (default 120)
 

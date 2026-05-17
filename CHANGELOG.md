@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Add proxy support via `--proxy`, `TGPIPE_PROXY` and `PROXY`.
+- Fix `--photo` invocation so the selected file is passed to `sendPhoto`.
+
 ## v1.0.0
 
 - Initial public release of tgpipe.
