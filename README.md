@@ -49,8 +49,8 @@ CHAT_ID="123456789"         # or multiple: "111,222,333"
 If you downloaded a release `.deb` (for example from GitHub Releases):
 
 ```bash
-wget https://github.com/sigalx/tgpipe/releases/download/v1.0.0/tgpipe_1.0.0_all.deb
-sudo dpkg -i tgpipe_1.0.0_all.deb
+wget https://github.com/sigalx/tgpipe/releases/download/v1.0.1/tgpipe_1.0.1-1_all.deb
+sudo dpkg -i tgpipe_1.0.1-1_all.deb
 ```
 
 Then create config:
@@ -71,7 +71,7 @@ sudo mkdir -p /srv/apt/tgpipe
 cd /srv/apt/tgpipe
 
 # copy your .deb here
-sudo cp /path/to/tgpipe_1.0.0_all.deb .
+sudo cp /path/to/tgpipe_1.0.1-1_all.deb .
 
 # build Packages index
 sudo dpkg-scanpackages . /dev/null | gzip -9 > Packages.gz
@@ -188,13 +188,13 @@ dpkg-buildpackage -us -uc
 Result:
 
 ```text
-../tgpipe_1.0.0_all.deb
+../tgpipe_1.0.1-1_all.deb
 ```
 
 Install:
 
 ```bash
-sudo dpkg -i ../tgpipe_1.0.0_all.deb
+sudo dpkg -i ../tgpipe_1.0.1-1_all.deb
 ```
 
 You can then optionally publish this `.deb` via a local APT repository (see above).

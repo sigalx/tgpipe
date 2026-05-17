@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
+## v1.0.1
 
 - Add proxy support via `--proxy`, `TGPIPE_PROXY` and `PROXY`.
 - Fix `--photo` invocation so the selected file is passed to `sendPhoto`.
+- Build Debian package artifacts on master pushes.
 
 ## v1.0.0
 
