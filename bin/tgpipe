@@ -213,6 +213,9 @@ if [ "${#INLINE_BUTTONS[@]}" -gt 0 ]; then
 	REPLY_MARKUP="{\"inline_keyboard\":[[$joined]]}"
 fi
 
+env_bot_token="${TGPIPE_BOT_TOKEN:-}"
+env_chat_id="${TGPIPE_CHAT_ID:-}"
+
 if [ -r "$CONF" ]; then
 	if perms=$(stat -c '%a' "$CONF" 2>/dev/null); then
 		if [ "$perms" != "600" ]; then
@@ -223,12 +226,12 @@ if [ -r "$CONF" ]; then
 	. "$CONF"
 fi
 
-if [ -z "${BOT_TOKEN:-}" ] && [ -n "${TGPIPE_BOT_TOKEN:-}" ]; then
-	BOT_TOKEN="$TGPIPE_BOT_TOKEN"
+if [ -n "$env_bot_token" ]; then
+	BOT_TOKEN="$env_bot_token"
 fi
 
-if [ -z "${CHAT_ID:-}" ] && [ -n "${TGPIPE_CHAT_ID:-}" ]; then
-	CHAT_ID="$TGPIPE_CHAT_ID"
+if [ -n "$env_chat_id" ]; then
+	CHAT_ID="$env_chat_id"
 fi
 
 if [ -z "$PROXY_URL" ] && [ -n "${TGPIPE_PROXY:-}" ]; then
@@ -289,12 +292,35 @@ if [ "$AUTO_CODE" = "true" ] && [ "$CODE_MODE" = "false" ]; then
 	fi
 fi
 
+curl_config_option() {
+	local option="$1"
+	local value="$2"
+
+	value=${value//\\/\\\\}
+	value=${value//\"/\\\"}
+	value=${value//$'\t'/\\t}
+	value=${value//$'\n'/\\n}
+	value=${value//$'\r'/\\r}
+
+	printf '%s = "%s"\n' "$option" "$value"
+}
+
 send_curl() {
 	local mode="${LOG_MODE:-normal}"
-	local -a curl_args=()
+	local request_config=""
+	local response http_code body curl_status
+
+	while [ "$#" -gt 0 ]; do
+		if [ "$#" -lt 2 ]; then
+			echo "tgpipe: internal error: incomplete curl option" >&2
+			return 1
+		fi
+		request_config+="$(curl_config_option "$1" "$2")"$'\n'
+		shift 2
+	done
 
 	if [ -n "$PROXY_URL" ]; then
-		curl_args+=(--proxy "$PROXY_URL")
+		request_config+="$(curl_config_option proxy "$PROXY_URL")"$'\n'
 	fi
 
 	case "$mode" in silent | verbose | normal) ;; *)
@@ -303,43 +329,48 @@ send_curl() {
 		;;
 	esac
 
-	case "$mode" in
-	silent)
-		curl -s "${curl_args[@]}" "$@" >/dev/null 2>&1
-		return
-		;;
-	verbose)
-		curl "${curl_args[@]}" "$@"
-		return
-		;;
-	normal)
-		local response http_code body curl_status
-		response=$(curl -s -w "\n%{http_code}" "${curl_args[@]}" "$@")
-		curl_status=$?
+	if [ "$mode" = "silent" ]; then
+		response=$(printf '%s' "$request_config" | curl --silent --show-error --write-out $'\n%{http_code}' --config - 2>/dev/null)
+	else
+		response=$(printf '%s' "$request_config" | curl --silent --show-error --write-out $'\n%{http_code}' --config -)
+	fi
+	curl_status=$?
 
-		if [ $curl_status -ne 0 ]; then
+	http_code=$(printf '%s\n' "$response" | tail -n1)
+	body=$(printf '%s\n' "$response" | sed '$d')
+
+	if [ "$mode" = "verbose" ] && [ -n "$body" ]; then
+		printf '%s\n' "$body"
+	fi
+
+	if [ "$curl_status" -ne 0 ]; then
+		if [ "$mode" != "silent" ]; then
 			echo "tgpipe: curl failed with status $curl_status" >&2
-			return 1
 		fi
+		return 1
+	fi
 
-		http_code=$(printf '%s\n' "$response" | tail -n1)
-		body=$(printf '%s\n' "$response" | sed '$d')
-
-		if [ "$http_code" != "200" ]; then
+	if [ "$http_code" != "200" ]; then
+		if [ "$mode" != "silent" ]; then
 			echo "tgpipe: HTTP $http_code" >&2
-			echo "tgpipe: body: $body" >&2
-			return 1
+			if [ "$mode" != "verbose" ]; then
+				echo "tgpipe: body: $body" >&2
+			fi
 		fi
+		return 1
+	fi
 
-		if printf '%s\n' "$body" | grep -q '"ok":false'; then
-			echo "tgpipe: Telegram API returned ok:false" >&2
-			echo "tgpipe: body: $body" >&2
-			return 1
+	if ! printf '%s\n' "$body" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true'; then
+		if [ "$mode" != "silent" ]; then
+			echo "tgpipe: Telegram API did not return ok:true" >&2
+			if [ "$mode" != "verbose" ]; then
+				echo "tgpipe: body: $body" >&2
+			fi
 		fi
+		return 1
+	fi
 
-		return 0
-		;;
-	esac
+	return 0
 }
 
 send_text_to_chat() {
@@ -385,23 +416,24 @@ send_text_to_chat() {
 			payload="<pre><code>$(html_escape "$part")</code></pre>"
 		fi
 
-		local args=(
-			-X POST "${API_URL}/sendMessage"
-			-d chat_id="${chat_id}"
-			--data-urlencode text="$payload"
-			-d disable_web_page_preview="${DISABLE_PREVIEW}"
-			-d disable_notification="${DISABLE_NOTIFICATION}"
+		local options=(
+			request POST
+			url "${API_URL}/sendMessage"
+			data "chat_id=${chat_id}"
+			data-urlencode "text=$payload"
+			data "disable_web_page_preview=${DISABLE_PREVIEW}"
+			data "disable_notification=${DISABLE_NOTIFICATION}"
 		)
 
 		if [ -n "$pmode" ]; then
-			args+=(-d parse_mode="${pmode}")
+			options+=(data "parse_mode=${pmode}")
 		fi
 
 		if [ -n "$REPLY_MARKUP" ]; then
-			args+=(--data-urlencode reply_markup="$REPLY_MARKUP")
+			options+=(data-urlencode "reply_markup=$REPLY_MARKUP")
 		fi
 
-		send_curl "${args[@]}" || return 1
+		send_curl "${options[@]}" || return 1
 	done
 }
 
@@ -418,23 +450,24 @@ send_document_to_chat() {
 		payload="<pre><code>$(html_escape "$caption")</code></pre>"
 	fi
 
-	local args=(
-		-X POST "${API_URL}/sendDocument"
-		-F chat_id="${chat_id}"
-		-F caption="$payload"
-		-F disable_notification="${DISABLE_NOTIFICATION}"
-		-F document="@${file}"
+	local options=(
+		request POST
+		url "${API_URL}/sendDocument"
+		form "chat_id=${chat_id}"
+		form "caption=$payload"
+		form "disable_notification=${DISABLE_NOTIFICATION}"
+		form "document=@${file}"
 	)
 
 	if [ -n "$pmode" ]; then
-		args+=(-F parse_mode="${pmode}")
+		options+=(form "parse_mode=${pmode}")
 	fi
 
 	if [ -n "$REPLY_MARKUP" ]; then
-		args+=(-F reply_markup="$REPLY_MARKUP")
+		options+=(form "reply_markup=$REPLY_MARKUP")
 	fi
 
-	send_curl "${args[@]}"
+	send_curl "${options[@]}"
 }
 
 send_photo_to_chat() {
@@ -450,23 +483,24 @@ send_photo_to_chat() {
 		payload="<pre><code>$(html_escape "$caption")</code></pre>"
 	fi
 
-	local args=(
-		-X POST "${API_URL}/sendPhoto"
-		-F chat_id="${chat_id}"
-		-F caption="$payload"
-		-F disable_notification="${DISABLE_NOTIFICATION}"
-		-F photo="@${file}"
+	local options=(
+		request POST
+		url "${API_URL}/sendPhoto"
+		form "chat_id=${chat_id}"
+		form "caption=$payload"
+		form "disable_notification=${DISABLE_NOTIFICATION}"
+		form "photo=@${file}"
 	)
 
 	if [ -n "$pmode" ]; then
-		args+=(-F parse_mode="${pmode}")
+		options+=(form "parse_mode=${pmode}")
 	fi
 
 	if [ -n "$REPLY_MARKUP" ]; then
-		args+=(-F reply_markup="$REPLY_MARKUP")
+		options+=(form "reply_markup=$REPLY_MARKUP")
 	fi
 
-	send_curl "${args[@]}"
+	send_curl "${options[@]}"
 }
 
 case "$MODE" in

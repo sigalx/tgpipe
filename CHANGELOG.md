@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.2
+
+- Return a failure status for Telegram HTTP and API errors in every logging mode.
+- Apply `TGPIPE_BOT_TOKEN` and `TGPIPE_CHAT_ID` overrides after loading config.
+- Keep Telegram credentials and message contents out of `curl` process arguments.
+- Add regression coverage for credential precedence, error handling and secure request input.
+
 ## v1.0.1
 
 - Add proxy support via `--proxy`, `TGPIPE_PROXY` and `PROXY`.

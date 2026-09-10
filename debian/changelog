@@ -1,3 +1,12 @@
+tgpipe (1.0.2-1) unstable; urgency=medium
+
+  * Fix delivery error handling across all logging modes.
+  * Honor TGPIPE credential overrides over config values.
+  * Keep Telegram credentials and message contents out of curl arguments.
+  * Add regression tests for error handling and secure request input.
+
+ -- sigalx <no-email>  Fri, 11 Sep 2026 00:54:01 +0300
+
 tgpipe (1.0.1-1) unstable; urgency=medium
 
   * Add proxy support for Telegram API requests.

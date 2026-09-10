@@ -17,20 +17,27 @@ cat >"$mock_bin/curl" <<'EOF'
 set -euo pipefail
 
 printf '%s\n' "$@" >"${TGPIPE_CURL_ARGS_FILE:?}"
+cat >"${TGPIPE_CURL_CONFIG_FILE:?}"
 printf '{"ok":true}\n200\n'
 EOF
 chmod +x "$mock_bin/curl"
 
 photo_file="$tmp_dir/photo.jpg"
 args_file="$tmp_dir/curl-args.txt"
+config_input_file="$tmp_dir/curl-config-input.txt"
 printf 'fake image bytes\n' >"$photo_file"
 
 PATH="$mock_bin:$PATH" \
 	TGPIPE_CURL_ARGS_FILE="$args_file" \
+	TGPIPE_CURL_CONFIG_FILE="$config_input_file" \
 	TGPIPE_BOT_TOKEN="test-token" \
 	TGPIPE_CHAT_ID="12345" \
 	"$repo_dir/bin/tgpipe" --photo "$photo_file" <<<"photo caption"
 
-grep -Fxq "https://api.telegram.org/bottest-token/sendPhoto" "$args_file"
-grep -Fxq "photo=@$photo_file" "$args_file"
-grep -Fxq "caption=photo caption" "$args_file"
+grep -Fxq 'url = "https://api.telegram.org/bottest-token/sendPhoto"' "$config_input_file"
+grep -Fxq "form = \"photo=@$photo_file\"" "$config_input_file"
+grep -Fxq 'form = "caption=photo caption"' "$config_input_file"
+if grep -Fq -e "test-token" -e "photo caption" "$args_file"; then
+	echo "bot token or photo caption leaked through curl argv" >&2
+	exit 1
+fi
